@@ -119,7 +119,7 @@ def _format_result_data(table_rows: list, tag_of_cell: str, formater_text: list)
     return formater_text
 
 
-def parser() -> None:
+def parser() -> list:
 
     options = Options()
     options.add_argument("--headless")
