@@ -49,7 +49,8 @@ def _get_table_and_table_rows(driver: WebDriver,
 
 def _get_table_rows_html(parsing_table: WebElement, tag_of_rows: str) -> list:
     """
-    En: 
+    En: Retrieves the saved table and the Css class of rows of this table,
+    returns a list of rows of this table
 
     Ru: Получает спарсенную таблицу и Css класс строк этой таблицы, 
     возвращает список строк этой таблицы
@@ -63,7 +64,8 @@ def _get_table_rows_html(parsing_table: WebElement, tag_of_rows: str) -> list:
 
 def _paginate(driver: WebDriver, location_method: str, value: str) -> None:
     """
-    En: 
+    En: Accepts an instance of the WebDriver class, the method, 
+    which will be used to search for the pagination button and the value itself.
 
     Ru: Принимет экземпляр класс WebDriver, метод, 
     по которому будет происходить поиск кнопки пагинации и само значение.
