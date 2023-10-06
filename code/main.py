@@ -1,7 +1,9 @@
+from parser_logic import parser
+from storage_logic import save_file
 
 
 def main():
-    pass
+    save_file(parser())
 
 
 if __name__ == "__main__":
