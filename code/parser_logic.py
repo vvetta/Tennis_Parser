@@ -5,8 +5,11 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import StaleElementReferenceException
 
 
 class TableRowsResult(NamedTuple):
@@ -14,7 +17,7 @@ class TableRowsResult(NamedTuple):
     number_of_table_rows: int
 
 
-def init_parser(url: str, options: Options=None) -> WebDriver:
+def init_parser(url: str, link_text_pagination_btn: str, options: Options=None) -> WebDriver:
     """
     En: Initialization of the parser. Returns an instance of the WebDriver class.
 
@@ -24,11 +27,15 @@ def init_parser(url: str, options: Options=None) -> WebDriver:
     driver = webdriver.Chrome(options=options)
     driver.get(url=url)
 
+    wait = WebDriverWait(driver, 100, ignored_exceptions=StaleElementReferenceException)
+    wait.until(EC.presence_of_element_located((By.LINK_TEXT, link_text_pagination_btn)))
+
     return driver
 
 
 def _get_table_and_table_rows(driver: WebDriver,
-                              class_of_table: str, class_of_rows: str) -> TableRowsResult:
+                              class_of_table: str, 
+                              class_of_rows: str) -> TableRowsResult:
     """
     En: Gets an instance of the WebDriver class, 
     Css table class and Css row class, returns the table and the number of rows.
@@ -36,6 +43,9 @@ def _get_table_and_table_rows(driver: WebDriver,
     Ru: Принимает экземпляр класса WebDriver, 
     Css класс таблицы и Css класс строки, возвращает таблицу и количество строк.
     """
+
+    wait = WebDriverWait(driver, 100, ignored_exceptions=StaleElementReferenceException)
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, class_of_table)))
 
     parsing_table = driver.find_element(By.CLASS_NAME, class_of_table)
     number_of_rows = len(driver.find_elements(By.CLASS_NAME, class_of_rows))
@@ -116,19 +126,39 @@ def _format_result_data(table_rows: list, tag_of_cell: str, formater_text: list)
     return formater_text
 
 
+def _wait_load_rows(driver: WebDriver, class_of_rows: str) -> None:
+    """
+    En: Checks whether the table page has loaded after pagination.
+
+    Ru: Смотрит загрузилась ли страница таблицы после пагинации.
+    """
+
+    wait = WebDriverWait(driver, 100, ignored_exceptions=StaleElementReferenceException)
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, class_of_rows)))
+    time.sleep(0.2)
+
+
 def parser() -> list:
+    """
+    En: The function where the main work of the parser takes place is
+    here pagination occurs and all nested functions are called,
+    returns a ready list with all the table information.
+
+    Ru: Функция, в которой происходит основная работа парсера, 
+    тут происходит пагинация и вызов всех вложенных функций, 
+    возвращает готовый список со всей информацией таблицы.
+    """
 
     # options = Options()
     # options.add_argument("--headless")
     
-    driver = init_parser(PARS_URL)
-    time.sleep(2)
+    driver = init_parser(PARS_URL, "››")
 
     result_list = []
     formater_text = []
 
     while True:
-        time.sleep(0.4)
+        _wait_load_rows(driver, "tpRow")
 
         parsing_table, number_of_rows = _get_table_and_table_rows(driver, "tpBody", "tpRow")
 
